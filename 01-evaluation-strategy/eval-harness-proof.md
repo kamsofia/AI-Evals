@@ -40,5 +40,7 @@ Bad summary:
 
 ## Screenshots, links or repo paths (optional if you followed the demo)
 
-_…_
+<img width="1470" height="956" alt="image" src="https://github.com/user-attachments/assets/49edeee3-ad9e-4ae8-9801-836cfd3c2430" />
+
+<img width="1451" height="804" alt="image" src="https://github.com/user-attachments/assets/81b3fa89-6858-4bc5-9387-95cfe5cdac4b" />
 
