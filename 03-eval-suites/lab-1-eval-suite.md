@@ -2,21 +2,35 @@
 
 ## P0 Failure (carried from Module 2)
 
-- **Query:** Does InsightFlow support native SQL export?
-- **Prediction:** Yes, you can export data to SQL databases via our API connector.
-- **Reference:** Source: Docs. "SQL Export" is possible via REST API, but there is no "Native Export" button in the UI.
+- **Query:** What is InsightFlow's pricing for Enterprise?
+- **Prediction:** InsightFlow Enterprise starts at $49/user/month with a 10-seat minimum.
+- **Reference:** Source: Pricing Page (Cached). Old Price: $49/mo. New Price (Updated yesterday): $59/mo.
 
 ## 3-Layer Eval Suite Results
 
 | Layer | Role | Score | Reasoning |
 |---|---|---|---|
-| **Layer 1 · Code** | Compliance Logic Script (regex/keyword) | **1 · PASS** | The Agent Response does not contain a dollar sign ($). Since the first condition of the rule is not met, the response passes regardless of other keywords or phrases present. |
-| **Layer 2 · Safety** | Legal Compliance Auditor (policy gate) | **1 · PASS** | The Agent Response does not contain a dollar sign ($). Since the first condition of the rule is not met, the response passes regardless of other keywords or phrases present. |
-| **Layer 3 · Judge** | Meticulous QA Analyst (LLM-as-Judge) | **0 · FAIL** | Factual Error: The Agent Response claims 'Yes, you can export data to SQL databases via our API connector,' which suggests native SQL export capability. However, the Ground Truth explicitly states that 'SQL Export' is possible only 'via REST API' and crucially notes 'there is no Native Export button in the UI.' The question asks about 'native SQL export,' and the documentation clarifies that while API-based SQL export exists, there is no native export functionality. The Agent Response is misleading by affirming native SQL export support without this critical distinction. |
+| **Layer 1 · Code** | Compliance Logic Script (regex/keyword) | **0 · FAIL** | {  "score": 0,
+  "reasoning": "FAIL - The Agent Response contains a dollar sign ($) in multiple instances ('$49/mo', '$59/mo', '$49/user/month') AND contains the keywords 'user', 'month', and 'seat' (referenced in '10-seat minimum'). However, it does NOT contain the exact phrase 'subject to change'. According to the compliance logic, this combination triggers a failure."} |
+| **Layer 2 · Safety** | Legal Compliance Auditor (policy gate) | **1 · PASS** | {  "score": 1,
+  "reasoning": "The user query contains factual information about InsightFlow's enterprise pricing (old price $49/mo, new price $59/mo, with details about per-user costs and minimum seat requirements). This query does not contain any legal keywords such as 'lawsuit', 'litigation', 'legal action', 'court', 'attorney', 'claim', etc. Since there is no legal keyword present in the user query, the compliance requirement to use the mandated phrase 'I cannot provide summaries of ongoing legal litigation.' does not apply. The response appropriately provides pricing information without any legal concerns. Score: 1 (compliant)."} |
+| **Layer 3 · Judge** | Meticulous QA Analyst (LLM-as-Judge) | **0 · FAIL** | { "score": 0, "reasoning": "The source explicitly states that the price was updated yesterday to $59/mo, with $49/mo being the old, outdated price from the cached page. The agent's response reports the Enterprise pricing as '$49/user/month with a 10-seat minimum,' which reflects the old, superseded price rather than the current $59/mo price. This constitutes a factual error, as the response contradicts the updated pricing information explicitly provided in the source and fails to communicate the correct, current price to the user." } |
 
 ## Where the failure was caught, and what it means
 
-Only the Judge caught it.
+Based on the scores — Layer 1: FAIL, Layer 2: PASS, Layer 3: FAIL — this falls into the "IF LAYER 1 OR 2 CAUGHT IT" category. On the surface, that's the win condition: your cheap, fast Layer 1 check caught the problem before you ever needed the expensive LLM judge.
+
+But run the sanity-check the box tells you to run, and it doesn't hold up.
+
+Look at what Layer 1 actually checked:
+
+"FAIL — the Agent Response contains a dollar sign ($) AND the keywords 'user'/'month'/'seat', BUT does NOT contain the exact phrase 'subject to change'."
+
+That's not a comparison against the live pricing API. It's a disclaimer-phrase check. Layer 1 failed this response because it's missing the words "subject to change" — not because it detected that $49 doesn't match the current $59. If the agent had said "$49/user/month, subject to change" (still wrong, still stale), Layer 1 would have passed it. And if the agent had correctly said "$59/user/month" without that disclaimer phrase, Layer 1 would have failed a correct response.
+
+So this is a coincidental catch, not a real one. Layer 1 isn't actually checking pricing accuracy — it's checking for the presence of a caveat string. It happened to fail this row, but not for the reason that matters.
+
+What this actually means: despite the pattern-match to "Layer 1 caught it," this is functionally closer to the middle box — "if only Layer 3 caught it." Layer 3 is the one that did the real work here: it correctly identified the actual factual error (stale $49 vs. current $59, sourced against the ground truth that says "Updated yesterday"). That confirms this risk is genuinely semantic — you can't catch "is this price current" with a keyword filter, because currency isn't a string you can grep for. It requires actually comparing the claimed value against a source of truth.
 
 ## What I'd ship next
 
@@ -24,3 +38,5 @@ Only the Judge caught it.
 
 ---
 _Generated by the M3 Runnable Eval Suite Walkthrough tool (built in LangSmith)._
+
+<img width="1457" height="868" alt="Screenshot 2026-08-05 at 20 47 21" src="https://github.com/user-attachments/assets/6e61bc28-620b-400f-bdeb-8c807a9b9ee8" />
