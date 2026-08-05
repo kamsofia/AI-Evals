@@ -15,22 +15,22 @@
 - **Ground truth:** Pass = predicted label matches ground truth on ≥98% of each individual category in a 500-item golden set.
 
 ### Drift Monitoring (Robustness)
-- **Method:** Manual spot-check: an analyst reviews a random sample of the agent's classifications on a set schedule (e.g., weekly), comparing them against what they'd judge to be the correct label.
+- **Method:** Manual spot-check: an analyst reviews a random sample of the agent's classifications on a set schedule (weekly), comparing them against what they'd judge to be the correct label.
 - **Ground truth:** Pass = analyst agrees with ≥95% of the sampled labels in that week's review.
 
 ## Strategic acceptance
 
 **Accepted gap:** Toxicity (UX Trust)
 
-We're willing to accept this risk because it seems less probable - It only spits out labels, no generated text, so nothing for it to say offensive itself. Not a P0.
+Output is restricted to a fixed, pre-reviewed label taxonomy — the agent never generates free text, so there's no mechanism for it to produce offensive language on its own. Risk is structurally low, not just unlikely. Accepting for now; revisit only if the taxonomy itself expands to include user-defined or free-text labels.
 
 ## Critical mitigation
 
 **Critical gap:** Bias (Fairness)
 
-**Why critical:** We've flagged this as the most critical risk because if it keeps mis-tagging certain sectors or regions, that skew goes straight into Sales/Strategy calls and might affect business. 
+**Why critical:** Flagged as most critical because mis-tagging by sector or region doesn't stay contained — it flows directly into Sales/Strategy decisions built on this data. A systematic skew here isn't a data-quality issue, it's a business-decision integrity issue.
 
-**Mitigation plan:** To close this gap we will build a bias test set with 100 items, deliberately spread across sectors, regions, company sizes so nothing's underrepresented. Run per-group accuracy monghlh, code-based, flag any group whose error rate is more than 2x the average. Add a manual review on whatever gets flagged, to tell real model bias apart from groups that just naturally get talked about differently.
+**Mitigation plan:** To close this gap we will build a bias test set with 100 items, deliberately spread across sectors, regions, company sizes so nothing's underrepresented. Run per-group accuracy monthly via code-based check; flag any group whose error rate exceeds 2x the average. Route flagged groups to manual review to distinguish genuine model bias from groups that are legitimately discussed differently in source material.
 
 
 ---
